@@ -27,6 +27,66 @@ snakeDir sDir;
 bool isGameOver;
 int highScore = 0;
 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+CHAR_INFO buffer[width*height];
+
+void ShowConsoleCursor(bool show){
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    cursorInfo.bVisible = show;
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
+}
+
+void SetCurSorPosition(int x, int y){
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    SetConsoleCursorPosition(hConsole, coord);
+}
+
+void ClearScreen(){
+    for(int i=0; i<width*height; i++){
+        buffer[i].Char.AsciiChar=' ';
+        buffer[i].Attributes=0x07;
+    }
+}
+
+void DrawBorder(){
+    //top border
+    for(int i=0; i<width+2; i++){
+        SetCurSorPosition(i, 0);
+        cout<<"-";
+        SetCurSorPosition(i, height+1);
+        cout<<"-";
+    }
+    //vertical borders
+    for(int i=1; i<=height;i++){
+        SetCurSorPosition(0, i);
+        cout<<"|";
+        SetCurSorPosition(width+1, i);
+        cout<<"|";
+    }
+}
+
+void DrawBuffer(int x, int y, char c){
+    if(x>0 && x<width && y>=0 && y<height){
+        int index = x+y*width;
+        buffer[index].Char.AsciiChar = c;
+        buffer[index].Attributes = 0x07;
+    }
+}
+
+void RenderBuffer(){
+    COORD bufferSize = {width, height};
+    COORD bufferCoord = {0,0};
+    SMALL_RECT writeRegion = {1,1,width,height};
+    WriteConsoleOutputA(hConsole, buffer,bufferSize, bufferCoord, &writeRegion);
+}
+
+void ClearTail(int prevX, int prevY){
+    SetCurSorPosition(prevX+1, prevY+1);
+    cout<<" ";
+}
 
 //initialize game variables
 void Game(){
@@ -37,44 +97,26 @@ void Game(){
 	fruitX = rand()%width;
 	fruitY = rand()%height;
 	playerScore = 0;
+	snakeTailLength=0;
 }
 
 //create the game board
 void GameRender(string playerName){
 	//clear console
-	system("cls");
-	//create top walls
-	for(int i=0; i<width+2; i++)
-		cout<<"-";
-		cout<<endl;
+	ClearScreen();
+	//draw the tail
+	for (int i=0; i<snakeTailLength; i++){
+        DrawBuffer(snakeTailX[i], snakeTailY[i], 'o');
+    }
+    //draw the fruit
+    DrawBuffer(fruitX, fruitY, '#');
+    //draw the head of the snake
+	DrawBuffer(x,y,'O');
+    //display buffer
+    RenderBuffer();
 
-		for(int i=0; i<height; i++){
-			for(int j=0; j<=width; j++){
-				if(j==0 || j==width)
-					cout<<"|";
-				if(i==y && j==x)
-					cout<<"O";
-				else if(i==fruitY && j==fruitX)
-					cout<<"#";
-				else{
-					bool prTail = false;
-					for(int k=0; k<snakeTailLength; k++){
-						if(snakeTailX[k] == j && snakeTailY[k]==i){
-							cout<<"o";
-							prTail = true;
-						}
-					}
-					if(!prTail)
-						cout<<" ";
-				}
-			}
-			cout<<endl;
-		}
-		//create bottom walls
-		for(int i=0; i<width+2; i++)
-			cout<<"-";
-			cout<<endl;
 		//display score
+		SetCurSorPosition(0, height+2);
 		cout<<playerName<<" Score : "<<playerScore<<endl;
 }
 
@@ -94,6 +136,9 @@ void UpdateGame(){
 		prevX=prev2X;
 		prevY=prev2Y;
 	}
+
+	ClearTail(prevX, prevY);
+
 	switch(sDir){
 		case LEFT:
 			x--;
@@ -189,8 +234,7 @@ void GameOver(string playerName){
     }else{
         cout<<"High Score : "<<highScore<<endl;
     }
-    cout<<"Press any key to return to main menu...";
-    _getch();
+
 }
 void LoadHighScore(){
     ifstream highScoreFile("highScore.txt");
@@ -203,10 +247,11 @@ void LoadHighScore(){
 }
 
 void StartGame(string playerName){
-
+    ShowConsoleCursor(false);
 	int dif = SetDifficulty();
 
 	Game();
+	DrawBorder();
 	while(!isGameOver){
 		GameRender(playerName);
 		UserInput();
@@ -214,6 +259,7 @@ void StartGame(string playerName){
 		Sleep(dif);
 	}
 	GameOver(playerName);
+	ShowConsoleCursor(true);
 }
 
 int main(){
@@ -241,7 +287,7 @@ int main(){
         cout<<"Would you like to play again? (y/n) : ";
         cin>>choose;
 	}while(choose == 'y' || choose == 'Y');
-	cout<<"Press any key to return to exit...";
+    cout<<"Press any key to return to main menu...";
     _getch();
 	return 0;
 }
