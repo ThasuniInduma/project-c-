@@ -2,11 +2,12 @@
 #include <conio.h>
 #include <windows.h>
 #include <cstdlib>
+#include <fstream>
 
 using namespace std;
 
 //hight and width
-const int width = 50;
+const int width = 100;
 const int height = 20;
 
 //snake head
@@ -24,7 +25,7 @@ enum snakeDir{STOP = 0, LEFT, RIGHT, UP, DOWN};
 snakeDir sDir;
 //checking game over or not
 bool isGameOver;
-int highScore;
+int highScore = 0;
 
 
 //initialize game variables
@@ -181,29 +182,28 @@ void GameOver(string playerName){
     if(playerScore>highScore){
         highScore = playerScore;
         cout<<"New High score : "<<highScore<<endl;
+        //save new high score to file
+        ofstream highScoreFile("highscore.txt");
+        highScoreFile<<highScore;
+        highScoreFile.close();
     }else{
         cout<<"High Score : "<<highScore<<endl;
     }
     cout<<"Press any key to return to main menu...";
     _getch();
 }
-void StartGame(){
-    string playerName;
-	cout<<"...................................................................\n";
-    cout<<"...................................................................\n";
-	cout<<"..                                                __      __     .. \n";
-	cout<<"..    * * *  **    *      *      *     *  * * * * \\ \\    / /     ..\n";
-	cout<<"..   *       * *   *     * *     *   *    *        \\ \\  / /      .. \n";
-	cout<<"..    * *    *  *  *    * * *    * *      * * *     \\ \\/ /       ..\n";
-	cout<<"..        *  *   * *   *     *   *   *    *         / /\\ \\       ..\n";
-	cout<<"..   * * *   *    **  *       *  *     *  * * * *  / /  \\ \\      ..\n";
-	cout<<"..                                                /_/    \\_\\     ..\n";
-	cout<<"...................................................................\n";
-	cout<<"...................................................................\n";
-	cout<<endl;
-	cout<<endl;
-	cout<<"         Enter your name : ";
-	cin>>playerName;
+void LoadHighScore(){
+    ifstream highScoreFile("highScore.txt");
+    if(highScoreFile.is_open()){
+        highScoreFile >> highScore;
+        highScoreFile.close();
+    }else{
+        highScore = 0;
+    }
+}
+
+void StartGame(string playerName){
+
 	int dif = SetDifficulty();
 
 	Game();
@@ -218,9 +218,26 @@ void StartGame(){
 
 int main(){
 	char choose;
+	string playerName;
+	cout<<"...................................................................\n";
+    cout<<"...................................................................\n";
+	cout<<"..                                                __      __     .. \n";
+	cout<<"..    * * *  **    *      *      *     *  * * * * \\ \\    / /     ..\n";
+	cout<<"..   *       * *   *     * *     *   *    *        \\ \\  / /      .. \n";
+	cout<<"..    * *    *  *  *    * * *    * *      * * *     \\ \\/ /       ..\n";
+	cout<<"..        *  *   * *   *     *   *   *    *         / /\\ \\       ..\n";
+	cout<<"..   * * *   *    **  *       *  *     *  * * * *  / /  \\ \\      ..\n";
+	cout<<"..                                                /_/    \\_\\     ..\n";
+	cout<<"...................................................................\n";
+	cout<<"...................................................................\n";
+	cout<<endl;
+	cout<<endl;
+	cout<<"Enter your name : ";
+	cin>>playerName;
+	LoadHighScore();
 	do{
-            system("cls");
-        StartGame();
+        system("cls");
+        StartGame(playerName);
         cout<<"Would you like to play again? (y/n) : ";
         cin>>choose;
 	}while(choose == 'y' || choose == 'Y');
