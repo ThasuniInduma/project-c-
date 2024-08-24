@@ -9,7 +9,7 @@ using namespace std;
 const int width = 50;
 const int height = 20;
 
-//snake head 
+//snake head
 int x,y;
 //food
 int fruitX,fruitY;
@@ -24,6 +24,8 @@ enum snakeDir{STOP = 0, LEFT, RIGHT, UP, DOWN};
 snakeDir sDir;
 //checking game over or not
 bool isGameOver;
+int highScore;
+
 
 //initialize game variables
 void Game(){
@@ -36,7 +38,7 @@ void Game(){
 	playerScore = 0;
 }
 
-//create the game board 
+//create the game board
 void GameRender(string playerName){
 	//clear console
 	system("cls");
@@ -74,7 +76,7 @@ void GameRender(string playerName){
 		//display score
 		cout<<playerName<<" Score : "<<playerScore<<endl;
 }
-	
+
 //update game state
 void UpdateGame(){
 	int prevX = snakeTailX[0];
@@ -82,7 +84,7 @@ void UpdateGame(){
 	int prev2X,prev2Y;
 	snakeTailX[0] = x;
 	snakeTailY[0]= y;
-	
+
 	for(int i=1; i<snakeTailLength; i++){
 		prev2X = snakeTailX[i];
 		prev2Y = snakeTailY[i];
@@ -107,7 +109,7 @@ void UpdateGame(){
 	}
 	if(x>=width || x<0 || y>=height || y<0)
 		isGameOver = true;
-		
+
 	for(int i=0; i<snakeTailLength; i++){
 		if(snakeTailX[i] == x && snakeTailY[i] == y)
 			isGameOver = true;
@@ -159,16 +161,34 @@ void UserInput(){
 				break;
 			case 's':
 				sDir = DOWN;
-				break;	
+				break;
 			case 'x':
 				isGameOver = true;
 				break;
 		}
 	}
 }
-
-int main(){
-	string playerName;
+void GameOver(string playerName){
+    system("cls");
+    cout<< "  _____                         ____                 \n";
+    cout<< " / ____|                       / __ \\                \n";
+    cout<< "| |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ \n";
+    cout<< "| | |_ |/ _` | '_ ` _ \\ / _ \\ | |  | \\ \\ / / _ \\ '__|\n";
+    cout<< "| |__| | (_| | | | | | |  __/ | |__| |\\ V /  __/ |   \n";
+    cout<< " \\_____|\\__,_|_| |_| |_|\\___|  \\____/  \\_/ \\___|_|   \n";
+    cout<< "\n\n";
+    cout<<playerName<<" Score : "<<playerScore<<endl;
+    if(playerScore>highScore){
+        highScore = playerScore;
+        cout<<"New High score : "<<highScore<<endl;
+    }else{
+        cout<<"High Score : "<<highScore<<endl;
+    }
+    cout<<"Press any key to return to main menu...";
+    _getch();
+}
+void StartGame(){
+    string playerName;
 	cout<<"...................................................................\n";
     cout<<"...................................................................\n";
 	cout<<"..                                                __      __     .. \n";
@@ -182,10 +202,10 @@ int main(){
 	cout<<"...................................................................\n";
 	cout<<endl;
 	cout<<endl;
-	cout<<"Enter your name : ";
+	cout<<"         Enter your name : ";
 	cin>>playerName;
 	int dif = SetDifficulty();
-	
+
 	Game();
 	while(!isGameOver){
 		GameRender(playerName);
@@ -193,9 +213,19 @@ int main(){
 		UpdateGame();
 		Sleep(dif);
 	}
-	return 0;
+	GameOver(playerName);
 }
 
-
-
+int main(){
+	char choose;
+	do{
+            system("cls");
+        StartGame();
+        cout<<"Would you like to play again? (y/n) : ";
+        cin>>choose;
+	}while(choose == 'y' || choose == 'Y');
+	cout<<"Press any key to return to exit...";
+    _getch();
+	return 0;
+}
 
