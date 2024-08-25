@@ -4,31 +4,34 @@
 #include <cstdlib>
 #include <fstream>
 
+
 using namespace std;
 
-//hight and width
+//hight and width of game board
 const int width = 100;
 const int height = 20;
 
-//snake head
+//snake head position
 int x,y;
-//food
+//food position
 int fruitX,fruitY;
 //store score of the player
 int playerScore;
-//snake tail
+//snake tail positions
 int snakeTailX[100],snakeTailY[100];
 //store length of the snake tail
 int snakeTailLength;
-//snake move
+//snake move direction
 enum snakeDir{STOP = 0, LEFT, RIGHT, UP, DOWN};
 snakeDir sDir;
 //checking game over or not
 bool isGameOver;
+//highScore
 int highScore = 0;
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 CHAR_INFO buffer[width*height];
+
 
 void ShowConsoleCursor(bool show){
     CONSOLE_CURSOR_INFO cursorInfo;
@@ -52,6 +55,7 @@ void ClearScreen(){
 }
 
 void DrawBorder(){
+
     //top border
     for(int i=0; i<width+2; i++){
         SetCurSorPosition(i, 0);
@@ -83,10 +87,7 @@ void RenderBuffer(){
     WriteConsoleOutputA(hConsole, buffer,bufferSize, bufferCoord, &writeRegion);
 }
 
-void ClearTail(int prevX, int prevY){
-    SetCurSorPosition(prevX+1, prevY+1);
-    cout<<" ";
-}
+
 
 //initialize game variables
 void Game(){
@@ -100,10 +101,11 @@ void Game(){
 	snakeTailLength=0;
 }
 
-//create the game board
+//render of the game board
 void GameRender(string playerName){
 	//clear console
 	ClearScreen();
+
 	//draw the tail
 	for (int i=0; i<snakeTailLength; i++){
         DrawBuffer(snakeTailX[i], snakeTailY[i], 'o');
@@ -137,7 +139,6 @@ void UpdateGame(){
 		prevY=prev2Y;
 	}
 
-	ClearTail(prevX, prevY);
 
 	switch(sDir){
 		case LEFT:
@@ -153,7 +154,8 @@ void UpdateGame(){
 			y++;
 			break;
 	}
-	if(x>=width || x<0 || y>=height || y<0)
+
+    if(x>=width || x<0 || y>=height || y<0)
 		isGameOver = true;
 
 	for(int i=0; i<snakeTailLength; i++){
@@ -175,42 +177,52 @@ int SetDifficulty(){
 		  "\nNOTE:if not choosen or pressed any other "
 		  "key, the difficulty will be automatically set "
 		  "to medium\nChoose difficulty level: ";
-	cin>>choice;
+	choice = _getch();
 	switch(choice){
 		case '1':
-			dif=50;
+			dif=150;
 			break;
 		case '2':
 			dif=100;
 			break;
 		case '3':
-			dif=150;
+			dif=50;
 			break;
 		default:
 			dif=100;
 	}
+	system("cls");
 	return dif;
 }
 
 //handle user inputs
 void UserInput(){
 	if(_kbhit()){
-		switch(_getch()){
+            char key = _getch();
+		switch(key){
 			case 'a':
-				sDir = LEFT;
+				if(sDir != RIGHT) sDir = LEFT;
 				break;
 			case 'd':
-				sDir = RIGHT;
+				if(sDir != LEFT) sDir = RIGHT;
 				break;
 			case 'w':
-				sDir = UP;
+				if(sDir != DOWN) sDir = UP;
 				break;
 			case 's':
-				sDir = DOWN;
+				if(sDir != UP) sDir = DOWN;
 				break;
 			case 'x':
 				isGameOver = true;
 				break;
+            case 'p':
+                while(true){
+                    if(_kbhit()){
+                        char pausekey = _getch();
+                        if(pausekey == 'p') break;
+                    }
+                }
+                break;
 		}
 	}
 }
@@ -224,20 +236,21 @@ void GameOver(string playerName){
     cout<< " \\_____|\\__,_|_| |_| |_|\\___|  \\____/  \\_/ \\___|_|   \n";
     cout<< "\n\n";
     cout<<playerName<<" Score : "<<playerScore<<endl;
-    if(playerScore>highScore){
+
+
+      if(playerScore>highScore){
         highScore = playerScore;
         cout<<"New High score : "<<highScore<<endl;
         //save new high score to file
         ofstream highScoreFile("highscore.txt");
         highScoreFile<<highScore;
         highScoreFile.close();
-    }else{
-        cout<<"High Score : "<<highScore<<endl;
-    }
-
+      }else{
+            cout<<"High Score : "<<highScore<<endl;
+      }
 }
 void LoadHighScore(){
-    ifstream highScoreFile("highScore.txt");
+    ifstream highScoreFile("highscore.txt");
     if(highScoreFile.is_open()){
         highScoreFile >> highScore;
         highScoreFile.close();
@@ -252,6 +265,7 @@ void StartGame(string playerName){
 
 	Game();
 	DrawBorder();
+
 	while(!isGameOver){
 		GameRender(playerName);
 		UserInput();
@@ -278,7 +292,7 @@ int main(){
 	cout<<"...................................................................\n";
 	cout<<endl;
 	cout<<endl;
-	cout<<"Enter your name : ";
+    cout<<"Enter your name : ";
 	cin>>playerName;
 	LoadHighScore();
 	do{
@@ -290,5 +304,6 @@ int main(){
     cout<<"Press any key to return to main menu...";
     _getch();
 	return 0;
+
 }
 
