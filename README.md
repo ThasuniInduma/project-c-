@@ -6,7 +6,7 @@
 
 ## Features
 - **Classic Snake Game**: The classic mechanics where the snake eats food to grow longer.
-- **Console-Based Gameplay**: Playable in a terminal/console.
+- **Console-Based Gameplay**: Playable in a terminal.
 - **Dynamic Difficulty**: The game speeds up as the snake grows.
 - **Game Over & Restart**: The game ends when the snake collides with a wall or itself, with an option to restart.
 - **Simple Controls**: Easy-to-learn gameplay using keyboard.
